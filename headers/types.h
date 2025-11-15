@@ -1,10 +1,28 @@
+/* *************************************************************************** */
+/*                                                                             */
+/*      /$$$$$$  /$$$$$$ /$$      /$$  /$$$$$$  /$$$$$$$  /$$$$$$$             */
+/*     /$$__  $$|_  $$_/| $$$    /$$$ /$$__  $$| $$__  $$| $$__  $$            */
+/*    | $$  \__/  | $$  | $$$$  /$$$$| $$  \ $$| $$  \ $$| $$  \ $$            */
+/*    |  $$$$$$   | $$  | $$ $$/$$ $$| $$$$$$$$| $$$$$$$/| $$  | $$            */
+/*     \____  $$  | $$  | $$  $$$| $$| $$__  $$| $$__  $$| $$  | $$            */
+/*     /$$  \ $$  | $$  | $$\  $ | $$| $$  | $$| $$  \ $$| $$  | $$            */
+/*    |  $$$$$$/ /$$$$$$| $$ \/  | $$| $$  | $$| $$  | $$| $$$$$$$/            */
+/*     \______/ |______/|__/     |__/|__/  |__/|__/  |__/|_______/             */
+/*                                                                             */
+/*    File: types.h                                                            */
+/*                                                                             */
+/* Free Palestine, fuck Trump      Made with love and coffee by SimardCodeTard */
+/* *************************************************************************** */
+
 #ifndef TYPES_H
-# define TYPES_h
+# define TYPES_H
 # include "includes.h"
 
 typedef uint8_t	bool_t;
 
-typedef char *	string_t;
+typedef char*	string_t;
+
+typedef enum serialization_result_e serialization_result_t;
 
 typedef struct test_result_s
 {
@@ -12,14 +30,13 @@ typedef struct test_result_s
 	string_t	expected;
 	string_t	got;
 	bool_t		success;
-	void		(*done)(test_result_t);
 }	test_result_t;
 
 typedef struct test_s
 {
-	test_result_t	(*do_test)(void *);
+	void			(*do_test)(test_result_t *, void *);
 	void			*params;
-	bool_t			expect_systerm;
+	bool_t			expect_sigsegv;
 }	test_t;
 
 typedef struct test_set_result_s
