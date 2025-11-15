@@ -9,27 +9,21 @@
 /*    |  $$$$$$/ /$$$$$$| $$ \/  | $$| $$  | $$| $$  | $$| $$$$$$$/          */
 /*     \______/ |______/|__/     |__/|__/  |__/|__/  |__/|_______/           */
 /*                                                                           */
-/*    File: lib.h                                                            */
-/*     Internal functions of the project                                     */
+/*    File: tests.h                                                          */
 /*                                                                           */
 /* Free Palestine, fuck fascists                                             */
 /*                               Made with love and coffee by SimardCodeTard */
 /* ************************************************************************* */
 
-#ifndef LIB_H
-# define LIB_H
+#ifndef TESTS_H
+# define TESTS_H
 
-# include "includes.h"
-# include "defines.h"
-# include "types.h"
-# include "messages.h"
-# include "colors.h"
-/* utils.c */
-uint8_t					numlen(uint16_t n);
+# include "../headers/lib.h"
+# include "utils/utils.h"
+# include <fcntl.h>
 
-/* serialization_utils.c */
-test_result_t			deserialize_result(uint16_t pipe_fd);
-serialization_result_t	serialize_result(uint16_t pipe_fd, test_result_t result);
+# define SERIALIZATION_FILE "tests/data/serialization_file"
 
+void	tests_serialization(void);
 
 #endif

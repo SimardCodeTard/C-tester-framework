@@ -13,11 +13,10 @@
 /*     General util functions                                                */
 /*                                                                           */
 /* Free Palestine, fuck fascists                                             */
-/*                                                                           */
 /*                               Made with love and coffee by SimardCodeTard */
 /* ************************************************************************* */
 
-#include "lib.h"
+#include "../headers/lib.h"
 
 uint8_t	numlen(uint16_t n)
 {

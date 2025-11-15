@@ -9,27 +9,23 @@
 /*    |  $$$$$$/ /$$$$$$| $$ \/  | $$| $$  | $$| $$  | $$| $$$$$$$/          */
 /*     \______/ |______/|__/     |__/|__/  |__/|__/  |__/|_______/           */
 /*                                                                           */
-/*    File: lib.h                                                            */
-/*     Internal functions of the project                                     */
+/*    File: colors.h                                                         */
+/*     Keys to print pretty logs :3                                          */
 /*                                                                           */
 /* Free Palestine, fuck fascists                                             */
 /*                               Made with love and coffee by SimardCodeTard */
 /* ************************************************************************* */
 
-#ifndef LIB_H
-# define LIB_H
+#ifndef COLORS_H
+# define COLORS_H
 
-# include "includes.h"
-# include "defines.h"
-# include "types.h"
-# include "messages.h"
-# include "colors.h"
-/* utils.c */
-uint8_t					numlen(uint16_t n);
-
-/* serialization_utils.c */
-test_result_t			deserialize_result(uint16_t pipe_fd);
-serialization_result_t	serialize_result(uint16_t pipe_fd, test_result_t result);
-
+# define KNRM  "\x1B[0m"
+# define KRED  "\x1B[31m"
+# define KGRN  "\x1B[32m"
+# define KYEL  "\x1B[33m"
+# define KBLU  "\x1B[34m"
+# define KMAG  "\x1B[35m"
+# define KCYN  "\x1B[36m"
+# define KWHT  "\x1B[37m"
 
 #endif

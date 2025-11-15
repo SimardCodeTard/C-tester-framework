@@ -9,27 +9,17 @@
 /*    |  $$$$$$/ /$$$$$$| $$ \/  | $$| $$  | $$| $$  | $$| $$$$$$$/          */
 /*     \______/ |______/|__/     |__/|__/  |__/|__/  |__/|_______/           */
 /*                                                                           */
-/*    File: lib.h                                                            */
-/*     Internal functions of the project                                     */
+/*    File: utils.h                                                          */
 /*                                                                           */
 /* Free Palestine, fuck fascists                                             */
 /*                               Made with love and coffee by SimardCodeTard */
 /* ************************************************************************* */
 
-#ifndef LIB_H
-# define LIB_H
+#ifndef UTILS_H
+# define UTILS_H
+# include "../../headers/lib.h"
 
-# include "includes.h"
-# include "defines.h"
-# include "types.h"
-# include "messages.h"
-# include "colors.h"
-/* utils.c */
-uint8_t					numlen(uint16_t n);
-
-/* serialization_utils.c */
-test_result_t			deserialize_result(uint16_t pipe_fd);
-serialization_result_t	serialize_result(uint16_t pipe_fd, test_result_t result);
-
+/* string.c */
+bool_t	strequals(string_t s1, string_t s2);
 
 #endif
