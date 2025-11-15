@@ -36,7 +36,7 @@ static serialization_result_t	write_exact(uint16_t fd, uint8_t *data, uint32_t s
 	}
 	if (total_bytes_written != size)
 	{
-		fprintf(stderr, "WARNING: test result serialization failed. This test will be considered failed later.");
+		fprintf(stderr, SERIALIZATION_FAILED);
 		return (SERIALIZE_FAIL);
 	}
 	return (SERIALIZE_SUCCESS);
@@ -108,7 +108,7 @@ static serialization_result_t read_exact(uint16_t fd, uint8_t *buf, uint32_t siz
 	}
 	if (total_bytes_read < size)
 	{
-		fprintf(stderr, "WARNING: test result deserialization failed. This test will be considered failed later.");
+		fprintf(stderr, DESERIALIZATION_FAILED);
 		return (SERIALIZE_FAIL);
 	}
 	return (SERIALIZE_SUCCESS);
@@ -141,7 +141,7 @@ static serialization_result_t	deserialize_string_field(uint16_t fd, string_t *fi
 	if (!*field)
 	{
 		*field = "(memory allocation failed durint deserialization)";
-		fprintf(stderr, "WARNING: Failed to allocate memory during test result deserialization.");
+		fprintf(stderr, DESERIALIZATION_MALLOC_FAILED);
 		return (SERIALIZE_FAIL);
 	}
 	if (deserialize_string(fd, field, len) == SERIALIZE_FAIL)
