@@ -1,1 +1,1 @@
-cc -Wall -Wextra -Werror -g3 */*.c */*/*.c && ./a.out
+make tests && ./c-test-framework-tests.a
