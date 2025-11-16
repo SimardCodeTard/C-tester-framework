@@ -21,7 +21,6 @@
 
 typedef struct params_serialization_utils_s
 {
-	string_t		description;
 	test_result_t	test_result;
 }	params_serialization_utils_t;
 

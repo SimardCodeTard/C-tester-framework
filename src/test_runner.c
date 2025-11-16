@@ -20,45 +20,90 @@
 
 static test_result_t	ft_run_test(test_t test, uint16_t n)
 {
-	test_result_t	res;
-	int				pipefd[2];
+	test_result_t			res;
+	int						pipefd[2];
+	pid_t					pid;
+	int						status;
 
-	// TODO, run test.do_test in a forked process and deserialize test result
-	// Also handle cases where the fork segfaults, using the bool expect_sigsegv
-	if (pipe(pipefd) || pipefd[0] < 0 || pipefd[1] < 0)
-		return (res);
-	test.do_test(pipefd[1], test.params);
-	res = deserialize_result(pipefd[0]);
-	if (res.success)
+	if (pipe(pipefd) == -1)
 	{
-		printf(KGRN"[%2d] %s%-70s%s Success !\n" KNRM, n, KNRM,
-			res.description, KGRN);
+		fprintf(stderr, KRED "Error during pipe creation\n" KNRM);
+		res.got = "Error during pipe creation";
+		res.success = false;
+		return (res);
+	}
+	pid = fork();
+	if (pid == -1)
+	{
+		fprintf(stderr, KRED "Error during fork\n" KNRM);
+		res.got = "Error during fork";
+		res.success = false;
+		close(pipefd[0]);
+		close(pipefd[1]);
+		return (res);
+	}
+	if (pid == 0)
+	{
+		close(pipefd[0]);
+		test.do_test(pipefd[1], test.params);
+		close(pipefd[1]);
+		exit(EXIT_SUCCESS);
+	}
+	close(pipefd[1]);
+	waitpid(pid, &status, 0);
+	res = deserialize_result(pipefd[0]);
+	close(pipefd[0]);
+	if (WIFSIGNALED(status) && WTERMSIG(status) == SIGSEGV)
+	{
+		if (test.expect_sigsegv)
+		{
+			res.success = true;
+			res.got = "(SIGSEGV)";
+		}
+		else
+		{
+			res.success = false;
+			res.got = "(SIGSEGV)";
+		}
+	}
+	else if (WIFEXITED(status) && WEXITSTATUS(status) == EXIT_SUCCESS)
+	{
+		if (test.expect_sigsegv)
+			printf(KBLU "Huh... I expected to segfault during this test. \
+Welp, well done protecting your inputs then :3\n" KNRM);
+		if (res.success)
+		{
+			printf(KGRN "[%2d] %s%-70s%s Success !\n" KNRM, n, KNRM,
+				secure_string_to_log(test.description), KGRN);
+		}
+		else
+		{
+			printf(KRED
+				"[%2d] %s%-70s %sFailure !%s\nExpected: %s%s%s, Got: %s%s\n"
+				KNRM, n, KNRM, secure_string_to_log(test.description),
+				KRED, KNRM, KYEL, secure_string_to_log(test.expected), KNRM,
+				KYEL, secure_string_to_log(res.got));
+		}
 	}
 	else
 	{
-		printf(KRED
-			"[%2d] %s%-70s %sFailure !%s\nExpected: %s%s%s, Got: %s%s\n"
-			KNRM, n, KNRM, res.description, KRED, KNRM, KYEL, res.expected,
-			KNRM, KYEL, res.got);
+		res.success = false;
+		res.got = "(unkown error)";
 	}
 	return (res);
 }
 
-static void	free_result(test_t *tests, test_result_t *results, uint16_t size)
+static void	free_all(test_t *tests, test_result_t *results, uint16_t size)
 {
 	uint16_t	i;
 
 	i = 0;
 	while (i < size)
 	{
-		if (tests[i].params)
-			free(tests[i].params);
-		if (results[i].description)
-			free(results[i].description);
-		if (results[i].expected)
-			free(results[i].expected);
-		if (results[i].got)
-			free(results[i].got);
+		safe_free(tests[i].params);
+		safe_free(tests[i].description);
+		safe_free(tests[i].expected);
+		safe_free(results[i].got);
 		i++;
 	}
 	free(tests);
@@ -74,9 +119,9 @@ static test_set_result_t	run_test_set(test_set_t test_set)
 	set_result.success_count = 0;
 	set_result.failure_count = 0;
 	tests_results = malloc(test_set.total * sizeof(test_result_t));
-	printf(
-		"\n===== Running %s%d%s tests accross for function %s\"%s\"%s =====\n",
-		KYEL, test_set.total, KNRM, KBLU, test_set.name, KNRM);
+	printf("\n===== Running %s%d%s tests for function%s\"%s\"%s =====\n",
+		KYEL, test_set.total, KNRM, KBLU, test_set.name,
+		KNRM);
 	i = 0;
 	while (i < test_set.total)
 	{
@@ -92,17 +137,16 @@ static test_set_result_t	run_test_set(test_set_t test_set)
 		printf(KGRN "All tests succeded !✅\n" KNRM);
 	else
 	{
-		printf(KRED"%d/%d test(s) failed !❌\n" KNRM,
-			set_result.failure_count,
+		printf(KRED "%d/%d test(s) failed !❌\n" KNRM, set_result.failure_count,
 			set_result.failure_count + set_result.success_count);
 	}
 	set_result.name = test_set.name;
-	free_result(test_set.tests, tests_results, test_set.total);
+	free_all(test_set.tests, tests_results, test_set.total);
 	return (set_result);
 }
 
 static string_t	*build_failed_sets_names_strings(test_set_result_t *results,
-					uint16_t failed_sets_count)
+		uint16_t failed_sets_count)
 {
 	string_t	*failed_sets_names;
 	uint16_t	i;
@@ -125,8 +169,9 @@ static string_t	*build_failed_sets_names_strings(test_set_result_t *results,
 	return (failed_sets_names);
 }
 
-static string_t	*build_successful_sets_names_strings(test_set_result_t *results,
-					uint16_t successful_sets_count)
+static string_t	*build_successful_sets_names_strings(
+		test_set_result_t *results,
+		uint16_t successful_sets_count)
 {
 	string_t	*successful_sets_names;
 	uint16_t	i;
@@ -150,11 +195,9 @@ static string_t	*build_successful_sets_names_strings(test_set_result_t *results,
 }
 
 static void	print_summary(string_t *failed_sets_names,
-							string_t *successful_sets_name,
-							uint16_t failed_sets_count,
-							uint16_t successful_sets_count,
-							uint16_t failed_tests_count,
-							uint16_t successful_tests_count)
+		string_t *successful_sets_name, uint16_t failed_sets_count,
+		uint16_t successful_sets_count, uint16_t failed_tests_count,
+		uint16_t successful_tests_count)
 {
 	uint16_t	i;
 
@@ -165,14 +208,14 @@ static void	print_summary(string_t *failed_sets_names,
 		return ;
 	}
 	if (failed_sets_count)
-		printf(KRED "❌ %s%d%s / %s%d%s tests failed across %s%d%s files!\n"
-			KNRM, KYEL, failed_tests_count, KRED, KYEL, failed_tests_count
-			+ successful_tests_count, KRED, KYEL, failed_sets_count
-			+ successful_sets_count, KRED);
+		printf(KRED "❌ %s%d%s / %s%d%s tests failed across %s%d%s file(s)!\n"
+			KNRM, KYEL, failed_tests_count, KRED, KYEL,
+			failed_tests_count + successful_tests_count, KRED, KYEL,
+			failed_sets_count + successful_sets_count, KRED);
 	else
-		printf(KGRN"✅ Successfuly ran %s%d%s tests across %s%d%s files!\n" KNRM,
-			KYEL, successful_tests_count, KGRN, KYEL, successful_sets_count,
-			KGRN);
+		printf(KGRN "✅ Successfuly ran %s%d%s tests across %s%d%s file(s)!\n"
+			KNRM, KYEL, successful_tests_count, KGRN, KYEL,
+			successful_sets_count, KGRN);
 	if (successful_sets_count)
 	{
 		printf(KGRN "Passed sets :\n");
@@ -203,6 +246,29 @@ static void	print_summary(string_t *failed_sets_names,
 		}
 		printf(KNRM);
 	}
+}
+
+static void	run_tests_free_all(test_set_result_t *set_results,
+	string_t *failed_sets_names, string_t *successful_sets_names,
+	uint16_t failed_sets_count, uint16_t successful_sets_count)
+{
+	uint16_t	i;
+
+	i = 0;
+	while (i < failed_sets_count)
+	{
+		safe_free(failed_sets_names[i]);
+		i++;
+	}
+	i = 0;
+	while (i < successful_sets_count)
+	{
+		safe_free(successful_sets_names[i]);
+		i++;
+	}
+	free(set_results);
+	free(failed_sets_names);
+	free(successful_sets_names);
 }
 
 int	run_tests(test_set_t *sets, uint16_t sets_size)
@@ -241,9 +307,8 @@ int	run_tests(test_set_t *sets, uint16_t sets_size)
 			successful_sets_count);
 	print_summary(failed_sets_names, successful_sets_names, failed_sets_count,
 		successful_sets_count, failed_tests_count, successful_tests_count);
-	free(set_results);
-	free(failed_sets_names);
-	free(successful_sets_names);
+	run_tests_free_all(set_results, failed_sets_names,
+		successful_sets_names, failed_sets_count, successful_sets_count);
 	if (failed_sets_count)
 		return (EXIT_FAILURE);
 	return (EXIT_SUCCESS);

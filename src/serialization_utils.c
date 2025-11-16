@@ -66,9 +66,12 @@ static serialization_result_t	serialize_string_field(int fd,
 {
 	uint16_t	field_length;
 
-	field_length = 0;
-	if (field)
-		field_length = strlen(field);
+	if (!field || !field[0])
+	{
+		safe_free(field);
+		field = secure_string_to_log(field);
+	}
+	field_length = strlen(field);
 	if (serialize_uint16(fd, field_length) == SERIALIZE_FAIL)
 		return (SERIALIZE_FAIL);
 	if ((serialize_string(fd, field, field_length)) == SERIALIZE_FAIL)
@@ -83,16 +86,6 @@ static serialization_result_t	serialize_byte(int fd, uint8_t byte)
 
 serialization_result_t	serialize_result(int fd, test_result_t result)
 {
-	if (serialize_string_field(fd, result.description) == SERIALIZE_FAIL)
-	{
-		printf(KYEL "Failed to write description. \n" KNRM);
-		return (SERIALIZE_FAIL);
-	}
-	if (serialize_string_field(fd, result.expected) == SERIALIZE_FAIL)
-	{
-		printf(KYEL "Failed to write expected. \n" KNRM);
-		return (SERIALIZE_FAIL);
-	}
 	if (serialize_string_field(fd, result.got) == SERIALIZE_FAIL)
 	{
 		printf(KYEL "Failed to write got. \n" KNRM);
@@ -185,10 +178,6 @@ static serialization_result_t	deserialize_byte(int fd, uint8_t *buffer)
 
 static test_result_t	secure_test_result(test_result_t result)
 {
-	if (!result.description)
-		result.description = "(null)";
-	if (!result.expected)
-		result.expected = "(null)";
 	if (!result.got)
 		result.got = "(null)";
 	return (result);
@@ -198,14 +187,8 @@ test_result_t	deserialize_result(int fd)
 {
 	test_result_t	result;
 
-	result.description = NULL;
-	result.expected = NULL;
 	result.got = NULL;
 	result.success = false;
-	if (deserialize_string_field(fd, &result.description) == SERIALIZE_FAIL)
-		return (secure_test_result(result));
-	if (deserialize_string_field(fd, &result.expected) == SERIALIZE_FAIL)
-		return (secure_test_result(result));
 	if (deserialize_string_field(fd, &result.got) == SERIALIZE_FAIL)
 		return (secure_test_result(result));
 	if (deserialize_byte(fd, &result.success) == SERIALIZE_FAIL)
