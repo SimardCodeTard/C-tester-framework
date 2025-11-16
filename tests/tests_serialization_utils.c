@@ -21,11 +21,13 @@
 bool_t	do_test(test_result_t out)
 {
 	test_result_t	in;
+	int				fd;
 
-	int fd = open(SERIALIZATION_FILE, O_CREAT | O_WRONLY, 0777);
+	fd = open(SERIALIZATION_FILE, O_CREAT | O_WRONLY, 0777);
 	if (fd == -1)
 	{
-		fprintf(stderr, KRED "ERROR: Failed to open file in tests_serialization.\n" KNRM);
+		fprintf(stderr, KRED
+			"ERROR: Failed to open file in tests_serialization.\n" KNRM);
 		return (false);
 	}
 	serialize_result(fd, out);
@@ -33,7 +35,8 @@ bool_t	do_test(test_result_t out)
 	fd = open(SERIALIZATION_FILE, O_RDONLY);
 	if (fd == -1)
 	{
-		fprintf(stderr, KRED "ERROR: Failed to open file in tests_serialization.\n" KNRM);
+		fprintf(stderr, KRED
+			"ERROR: Failed to open file in tests_serialization.\n" KNRM);
 		return (false);
 	}
 	in = deserialize_result(fd);
@@ -52,7 +55,6 @@ void	tests_serialization(void)
 
 	ok = true;
 	printf("Running serialization tests\n");
-
 	standard_test_result.description = "Description";
 	standard_test_result.expected = "Expected";
 	standard_test_result.got = "Got";

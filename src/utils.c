@@ -34,6 +34,7 @@ uint8_t	numlen(uint16_t n)
 string_t	to_printable(uint8_t c)
 {
 	string_t	buffer;
+
 	if (isprint(c))
 	{
 		buffer = calloc(2, sizeof(char));

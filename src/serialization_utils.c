@@ -18,7 +18,8 @@
 
 #include "../headers/lib.h"
 
-static serialization_result_t	write_exact(uint16_t fd, uint8_t *data, uint32_t size)
+static serialization_result_t	write_exact(uint16_t fd, uint8_t *data,
+								uint32_t size)
 {
 	ssize_t		write_result;
 	uint32_t	total_bytes_written;
@@ -29,7 +30,8 @@ static serialization_result_t	write_exact(uint16_t fd, uint8_t *data, uint32_t s
 	write_result = 1;
 	while (write_result > 0 && total_bytes_written < size)
 	{
-		write_result = write(fd, data + total_bytes_written, size - total_bytes_written);
+		write_result = write(fd, data + total_bytes_written,
+				size - total_bytes_written);
 		if (write_result > 0)
 			total_bytes_written += write_result;
 	}
@@ -51,14 +53,16 @@ static serialization_result_t	serialize_uint16(uint16_t fd, uint16_t data)
 	return (write_exact(fd, bytes, UINT16_SIZE));
 }
 
-static serialization_result_t	serialize_string(uint16_t fd, string_t str, uint16_t len)
+static serialization_result_t	serialize_string(uint16_t fd, string_t str,
+								uint16_t len)
 {
 	if (!str)
 		str = "";
 	return (write_exact(fd, (uint8_t *) str, len));
 }
 
-static serialization_result_t	serialize_string_field(uint16_t fd, string_t field)
+static serialization_result_t	serialize_string_field(uint16_t fd,
+								string_t field)
 {
 	uint16_t	field_length;
 
@@ -102,7 +106,8 @@ serialization_result_t	serialize_result(uint16_t fd, test_result_t result)
 	return (SERIALIZE_SUCCESS);
 }
 
-static serialization_result_t read_exact(uint16_t fd, uint8_t *buffer, uint32_t size)
+static serialization_result_t	read_exact(uint16_t fd, uint8_t *buffer,
+								uint32_t size)
 {
 	ssize_t		read_result;
 	uint32_t	total_bytes_read;
@@ -113,7 +118,8 @@ static serialization_result_t read_exact(uint16_t fd, uint8_t *buffer, uint32_t 
 	total_bytes_read = 0;
 	while (read_result > 0 && total_bytes_read < size)
 	{
-		read_result = read(fd, buffer + total_bytes_read, size - total_bytes_read);
+		read_result = read(fd, buffer + total_bytes_read,
+				size - total_bytes_read);
 		if (read_result == -1)
 			fprintf(stderr, KRED "ERROR: Read failed.\n" KNRM);
 		if (read_result > 0)
@@ -121,33 +127,36 @@ static serialization_result_t read_exact(uint16_t fd, uint8_t *buffer, uint32_t 
 	}
 	if (total_bytes_read < size)
 	{
-		fprintf(stderr, KRED "Read %d bytes out of %d expected\n" KNRM, total_bytes_read, size);
+		fprintf(stderr, KRED "Read %d bytes out of %d expected\n" KNRM,
+			total_bytes_read, size);
 		fprintf(stderr, KYEL DESERIALIZATION_FAILED KNRM);
 		return (SERIALIZE_FAIL);
 	}
 	return (SERIALIZE_SUCCESS);
 }
 
-static serialization_result_t deserialize_uint16(uint16_t fd, uint16_t *buffer)
+static serialization_result_t	deserialize_uint16(uint16_t fd, uint16_t *buffer)
 {
 	uint8_t		*bytes;
 
 	bytes = calloc(2, sizeof(uint8_t));
 	if (!bytes)
-		return(SERIALIZE_FAIL);
+		return (SERIALIZE_FAIL);
 	if (read_exact(fd, bytes, UINT16_SIZE) == SERIALIZE_FAIL)
 		return (SERIALIZE_FAIL);
-    *buffer = (bytes[0] << 8) | bytes[1];
+	*buffer = (bytes[0] << 8) | bytes[1];
 	free(bytes);
 	return (SERIALIZE_SUCCESS);
 }
 
-static serialization_result_t	deserialize_string(uint16_t fd, string_t *str, uint16_t len)
+static serialization_result_t	deserialize_string(uint16_t fd, string_t *str,
+								uint16_t len)
 {
 	return (read_exact(fd, (uint8_t *) *str, len));
 }
 
-static serialization_result_t	deserialize_string_field(uint16_t fd, string_t *field)
+static serialization_result_t	deserialize_string_field(uint16_t fd,
+								string_t *field)
 {
 	uint16_t	len;
 
