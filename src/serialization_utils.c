@@ -177,20 +177,11 @@ static serialization_result_t	deserialize_byte(uint16_t fd, uint8_t *buffer)
 static test_result_t	secure_test_result(test_result_t result)
 {
 	if (!result.description)
-	{
-		fprintf(stderr, KYEL "WARNING: Field 'description' is NULL after deserialization.\n" KNRM);
-		result.description = "(test result deserialization failed)";
-	}
+		result.description = "(null)";
 	if (!result.expected)
-	{
-		fprintf(stderr, KYEL "WARNING: Field 'expected' is NULL after deserialization.\n" KNRM);
-		result.expected = "(test result deserialization failed)";
-	}
+		result.expected = "(null)";
 	if (!result.got)
-	{
-		fprintf(stderr, KYEL "WARNING: Field 'got' is NULL after deserialization.\n" KNRM);
-		result.got = "(test result deserialization failed)";
-	}
+		result.got = "(null)";
 	return (result);
 }
 
@@ -210,5 +201,5 @@ test_result_t	deserialize_result(uint16_t fd)
 		return (secure_test_result(result));
 	if (deserialize_byte(fd, &result.success) == SERIALIZE_FAIL)
 		return (secure_test_result(result));
-	return (result);
+	return (secure_test_result(result));
 }
