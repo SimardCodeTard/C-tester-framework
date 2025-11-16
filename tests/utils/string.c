@@ -20,7 +20,7 @@
 
 bool_t	strequals(string_t s1, string_t s2)
 {
-	if (s1 == NULL && s2 == NULL)
+	if ((s1 == NULL && s2 == NULL) || (s1[0] == 0 && s2 == NULL) || (s1 == NULL && s2[0] == 0))
 		return (true);
 	else if (s1 == NULL || s2 == NULL)
 		return (false);

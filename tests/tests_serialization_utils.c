@@ -22,13 +22,20 @@ bool_t	do_test(test_result_t out)
 {
 	test_result_t	in;
 
-	int fd = open(SERIALIZATION_FILE, O_CREAT | O_WRONLY, 0644);
+	int fd = open(SERIALIZATION_FILE, O_CREAT | O_WRONLY, 0777);
 	if (fd == -1)
 	{
 		fprintf(stderr, KRED "ERROR: Failed to open file in tests_serialization.\n" KNRM);
 		return (false);
 	}
 	serialize_result(fd, out);
+	close(fd);
+	fd = open(SERIALIZATION_FILE, O_RDONLY);
+	if (fd == -1)
+	{
+		fprintf(stderr, KRED "ERROR: Failed to open file in tests_serialization.\n" KNRM);
+		return (false);
+	}
 	in = deserialize_result(fd);
 	close(fd);
 	return (strequals(in.description, out.description)
@@ -50,7 +57,6 @@ void	tests_serialization(void)
 	standard_test_result.expected = "Expected";
 	standard_test_result.got = "Got";
 	standard_test_result.success = true;
-	remove(SERIALIZATION_FILE);
 	if (!do_test(standard_test_result))
 	{
 		printf(KRED "Test with standard result failed !\n" KNRM);
@@ -58,7 +64,6 @@ void	tests_serialization(void)
 	}
 	else
 		printf(KGRN "Test with standard result succeded !\n" KNRM);
-	remove(SERIALIZATION_FILE);
 	partially_null_test_result.description = "Description";
 	partially_null_test_result.expected = NULL;
 	partially_null_test_result.got = NULL;
@@ -74,14 +79,14 @@ void	tests_serialization(void)
 	fully_null_test_result.expected = NULL;
 	fully_null_test_result.got = NULL;
 	fully_null_test_result.success = false;
-	remove(SERIALIZATION_FILE);
-	if (do_test(fully_null_test_result))
+	if (!do_test(fully_null_test_result))
 	{
 		printf(KRED "Test with fully NULL result failed !\n" KNRM);
 		ok = false;
 	}
 	else
 		printf(KGRN "Test with fully NULL result succeded !\n" KNRM);
+	printf("------ Summary ------\n");
 	if (ok)
 		printf(KGRN "Serialize: ✅ All tests succeeded !\n" KNRM);
 	else

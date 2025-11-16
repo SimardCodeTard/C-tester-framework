@@ -102,23 +102,26 @@ serialization_result_t	serialize_result(uint16_t fd, test_result_t result)
 	return (SERIALIZE_SUCCESS);
 }
 
-static serialization_result_t read_exact(uint16_t fd, uint8_t **buffer, uint32_t size)
+static serialization_result_t read_exact(uint16_t fd, uint8_t *buffer, uint32_t size)
 {
 	ssize_t		read_result;
 	uint32_t	total_bytes_read;
 
-	if (!buffer || !*buffer)
+	if (!buffer)
 		return (SERIALIZE_FAIL);
 	read_result = 1;
 	total_bytes_read = 0;
 	while (read_result > 0 && total_bytes_read < size)
 	{
-		read_result = read(fd, *buffer + total_bytes_read, size - total_bytes_read);
+		read_result = read(fd, buffer + total_bytes_read, size - total_bytes_read);
+		if (read_result == -1)
+			fprintf(stderr, KRED "ERROR: Read failed.\n" KNRM);
 		if (read_result > 0)
 			total_bytes_read += read_result;
 	}
 	if (total_bytes_read < size)
 	{
+		fprintf(stderr, KRED "Read %d bytes out of %d expected\n" KNRM, total_bytes_read, size);
 		fprintf(stderr, KYEL DESERIALIZATION_FAILED KNRM);
 		return (SERIALIZE_FAIL);
 	}
@@ -127,19 +130,21 @@ static serialization_result_t read_exact(uint16_t fd, uint8_t **buffer, uint32_t
 
 static serialization_result_t deserialize_uint16(uint16_t fd, uint16_t *buffer)
 {
-	uint8_t		bytes[2];
+	uint8_t		*bytes;
 
-	if (read_exact(fd, (uint8_t **) &bytes, UINT16_SIZE) == SERIALIZE_FAIL)
+	bytes = calloc(2, sizeof(uint8_t));
+	if (!bytes)
+		return(SERIALIZE_FAIL);
+	if (read_exact(fd, bytes, UINT16_SIZE) == SERIALIZE_FAIL)
 		return (SERIALIZE_FAIL);
-	*buffer = bytes[0];
-	*buffer *= 256;
-	*buffer += bytes[1];
+    *buffer = (bytes[0] << 8) | bytes[1];
+	free(bytes);
 	return (SERIALIZE_SUCCESS);
 }
 
 static serialization_result_t	deserialize_string(uint16_t fd, string_t *str, uint16_t len)
 {
-	return (read_exact(fd, (uint8_t **) str, len));
+	return (read_exact(fd, (uint8_t *) *str, len));
 }
 
 static serialization_result_t	deserialize_string_field(uint16_t fd, string_t *field)
@@ -151,7 +156,7 @@ static serialization_result_t	deserialize_string_field(uint16_t fd, string_t *fi
 	*field = calloc(len + 1, sizeof(char));
 	if (!*field)
 	{
-		*field = "(memory allocation failed durint deserialization)";
+		*field = "(memory allocation failed during deserialization)";
 		fprintf(stderr, KYEL DESERIALIZATION_MALLOC_FAILED KNRM);
 		return (SERIALIZE_FAIL);
 	}
@@ -161,25 +166,31 @@ static serialization_result_t	deserialize_string_field(uint16_t fd, string_t *fi
 		*field = "(test result deserialization failed)";
 		return (SERIALIZE_FAIL);
 	}
-	*field[len] = '\0';
 	return (SERIALIZE_SUCCESS);
 }
 
 static serialization_result_t	deserialize_byte(uint16_t fd, uint8_t *buffer)
 {
-	if (read(fd, buffer, UINT8_SIZE) < UINT8_SIZE)
-		return SERIALIZE_FAIL;
-	return (SERIALIZE_SUCCESS);
+	return (read_exact(fd, buffer, UINT8_SIZE));
 }
 
 static test_result_t	secure_test_result(test_result_t result)
 {
 	if (!result.description)
+	{
+		fprintf(stderr, KYEL "WARNING: Field 'description' is NULL after deserialization.\n" KNRM);
 		result.description = "(test result deserialization failed)";
+	}
 	if (!result.expected)
+	{
+		fprintf(stderr, KYEL "WARNING: Field 'expected' is NULL after deserialization.\n" KNRM);
 		result.expected = "(test result deserialization failed)";
+	}
 	if (!result.got)
+	{
+		fprintf(stderr, KYEL "WARNING: Field 'got' is NULL after deserialization.\n" KNRM);
 		result.got = "(test result deserialization failed)";
+	}
 	return (result);
 }
 
@@ -192,24 +203,12 @@ test_result_t	deserialize_result(uint16_t fd)
 	result.got = NULL;
 	result.success = false;
 	if (deserialize_string_field(fd, &result.description) == SERIALIZE_FAIL)
-	{
-		printf(KYEL "Failed to read description\n" KNRM);
 		return (secure_test_result(result));
-	}
 	if (deserialize_string_field(fd, &result.expected) == SERIALIZE_FAIL)
-	{
-		printf(KYEL "Failed to read expected\n" KNRM);
 		return (secure_test_result(result));
-	}
 	if (deserialize_string_field(fd, &result.got) == SERIALIZE_FAIL)
-	{
-		printf(KYEL "Failed to read got\n" KNRM);
 		return (secure_test_result(result));
-	}
 	if (deserialize_byte(fd, &result.success) == SERIALIZE_FAIL)
-	{
-		printf(KYEL "Failed to read success\n" KNRM);
 		return (secure_test_result(result));
-	}
 	return (result);
 }

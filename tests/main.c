@@ -20,6 +20,8 @@
 
 int	main(void)
 {
+	printf("====================\n");
 	tests_serialization();
+	printf("====================\n");
 	return (EXIT_SUCCESS);
 }

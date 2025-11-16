@@ -22,7 +22,7 @@
 # include "utils/utils.h"
 # include <fcntl.h>
 
-# define SERIALIZATION_FILE "tests/data/serialization_file"
+# define SERIALIZATION_FILE "tests/data/serialization_test_file"
 
 void	tests_serialization(void);
 

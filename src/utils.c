@@ -30,3 +30,19 @@ uint8_t	numlen(uint16_t n)
 	}
 	return (len);
 }
+
+string_t	to_printable(uint8_t c)
+{
+	string_t	buffer;
+	if (isprint(c))
+	{
+		buffer = calloc(2, sizeof(char));
+		buffer[0] = c;
+	}
+	else
+	{
+		buffer = calloc(6, sizeof(char));
+		sprintf((string_t) buffer, "\\%03d", c);
+	}
+	return (buffer);
+}

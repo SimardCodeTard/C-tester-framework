@@ -26,6 +26,7 @@
 # include "colors.h"
 /* utils.c */
 uint8_t					numlen(uint16_t n);
+string_t				to_printable(uint8_t c);
 
 /* serialization_utils.c */
 test_result_t			deserialize_result(uint16_t pipe_fd);
