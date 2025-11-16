@@ -20,6 +20,6 @@
 # include "../../headers/lib.h"
 
 /* string.c */
-bool_t	strequals(string_t s1, string_t s2);
-
+bool_t		strequals(string_t s1, string_t s2);
+string_t	test_result_to_string(test_result_t result);
 #endif

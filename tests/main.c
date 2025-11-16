@@ -20,8 +20,12 @@
 
 int	main(void)
 {
-	printf("====================\n");
-	tests_serialization();
-	printf("====================\n");
+	test_set_t	*sets;
+	uint16_t	total;
+
+	total = 1;
+	sets = malloc(total * sizeof(test_set_t));
+	sets[0] = tests_serialization();
+	run_tests(sets, total);
 	return (EXIT_SUCCESS);
 }

@@ -9,19 +9,18 @@
 /*    |  $$$$$$/ /$$$$$$| $$ \/  | $$| $$  | $$| $$  | $$| $$$$$$$/          */
 /*     \______/ |______/|__/     |__/|__/  |__/|__/  |__/|_______/           */
 /*                                                                           */
-/*    File: c_test_framework.h                                               */
-/*     Main header file of the project                                       */
+/*    File: tests_result_tostring.c                                          */
+/*     Stringify functions for test_result_t                                 */
 /*                                                                           */
 /* Free Palestine, fuck fascists                                             */
-/*                                                                           */
 /*                               Made with love and coffee by SimardCodeTard */
 /* ************************************************************************* */
 
-#ifndef C_TEST_FRAMEWORK_H
-# define C_TEST_FRAMEWORK_H
+#include "../headers/lib.h"
 
-# include "types.h"
-# include "defines.h"
-# include "includes.h"
-
-#endif
+string_t	test_result_to_string(test_result_t result)
+{
+	(void) result;
+	printf("%ld\n", ft_strlen("caca"));
+	return "proutxd";
+}

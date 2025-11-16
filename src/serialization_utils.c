@@ -18,7 +18,7 @@
 
 #include "../headers/lib.h"
 
-static serialization_result_t	write_exact(uint16_t fd, uint8_t *data,
+static serialization_result_t	write_exact(int fd, uint8_t *data,
 								uint32_t size)
 {
 	ssize_t		write_result;
@@ -43,7 +43,7 @@ static serialization_result_t	write_exact(uint16_t fd, uint8_t *data,
 	return (SERIALIZE_SUCCESS);
 }
 
-static serialization_result_t	serialize_uint16(uint16_t fd, uint16_t data)
+static serialization_result_t	serialize_uint16(int fd, uint16_t data)
 {
 	uint8_t	bytes[2];
 
@@ -53,7 +53,7 @@ static serialization_result_t	serialize_uint16(uint16_t fd, uint16_t data)
 	return (write_exact(fd, bytes, UINT16_SIZE));
 }
 
-static serialization_result_t	serialize_string(uint16_t fd, string_t str,
+static serialization_result_t	serialize_string(int fd, string_t str,
 								uint16_t len)
 {
 	if (!str)
@@ -61,7 +61,7 @@ static serialization_result_t	serialize_string(uint16_t fd, string_t str,
 	return (write_exact(fd, (uint8_t *) str, len));
 }
 
-static serialization_result_t	serialize_string_field(uint16_t fd,
+static serialization_result_t	serialize_string_field(int fd,
 								string_t field)
 {
 	uint16_t	field_length;
@@ -76,12 +76,12 @@ static serialization_result_t	serialize_string_field(uint16_t fd,
 	return (SERIALIZE_SUCCESS);
 }
 
-static serialization_result_t	serialize_byte(uint16_t fd, uint8_t byte)
+static serialization_result_t	serialize_byte(int fd, uint8_t byte)
 {
 	return (write_exact(fd, &byte, UINT8_SIZE));
 }
 
-serialization_result_t	serialize_result(uint16_t fd, test_result_t result)
+serialization_result_t	serialize_result(int fd, test_result_t result)
 {
 	if (serialize_string_field(fd, result.description) == SERIALIZE_FAIL)
 	{
@@ -106,7 +106,7 @@ serialization_result_t	serialize_result(uint16_t fd, test_result_t result)
 	return (SERIALIZE_SUCCESS);
 }
 
-static serialization_result_t	read_exact(uint16_t fd, uint8_t *buffer,
+static serialization_result_t	read_exact(int fd, uint8_t *buffer,
 								uint32_t size)
 {
 	ssize_t		read_result;
@@ -135,7 +135,7 @@ static serialization_result_t	read_exact(uint16_t fd, uint8_t *buffer,
 	return (SERIALIZE_SUCCESS);
 }
 
-static serialization_result_t	deserialize_uint16(uint16_t fd, uint16_t *buffer)
+static serialization_result_t	deserialize_uint16(int fd, uint16_t *buffer)
 {
 	uint8_t		*bytes;
 
@@ -149,13 +149,13 @@ static serialization_result_t	deserialize_uint16(uint16_t fd, uint16_t *buffer)
 	return (SERIALIZE_SUCCESS);
 }
 
-static serialization_result_t	deserialize_string(uint16_t fd, string_t *str,
+static serialization_result_t	deserialize_string(int fd, string_t *str,
 								uint16_t len)
 {
 	return (read_exact(fd, (uint8_t *) *str, len));
 }
 
-static serialization_result_t	deserialize_string_field(uint16_t fd,
+static serialization_result_t	deserialize_string_field(int fd,
 								string_t *field)
 {
 	uint16_t	len;
@@ -178,7 +178,7 @@ static serialization_result_t	deserialize_string_field(uint16_t fd,
 	return (SERIALIZE_SUCCESS);
 }
 
-static serialization_result_t	deserialize_byte(uint16_t fd, uint8_t *buffer)
+static serialization_result_t	deserialize_byte(int fd, uint8_t *buffer)
 {
 	return (read_exact(fd, buffer, UINT8_SIZE));
 }
@@ -194,7 +194,7 @@ static test_result_t	secure_test_result(test_result_t result)
 	return (result);
 }
 
-test_result_t	deserialize_result(uint16_t fd)
+test_result_t	deserialize_result(int fd)
 {
 	test_result_t	result;
 

@@ -19,11 +19,12 @@
 # define TESTS_H
 
 # include "../headers/lib.h"
+# include "../c_test_framework.h"
 # include "utils/utils.h"
 # include <fcntl.h>
 
 # define SERIALIZATION_FILE "tests/data/serialization_test_file"
 
-void	tests_serialization(void);
+test_set_t	tests_serialization(void);
 
 #endif

@@ -29,8 +29,7 @@ uint8_t					numlen(uint16_t n);
 string_t				to_printable(uint8_t c);
 
 /* serialization_utils.c */
-test_result_t			deserialize_result(uint16_t pipe_fd);
-serialization_result_t	serialize_result(uint16_t pipe_fd, test_result_t result);
-
+test_result_t			deserialize_result(int pipe_fd);
+serialization_result_t	serialize_result(int pipe_fd, test_result_t result);
 
 #endif

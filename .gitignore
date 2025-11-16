@@ -1,6 +1,9 @@
 *.out
-*.a
 *.o
 *.d
 .make_*_done
 serialization_test_file
+.vscode
+!.gitignore
+*.a
+!/lib/*.a

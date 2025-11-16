@@ -1,1 +1,1 @@
-make tests && ./c-test-framework-tests.a
+make fclean && make tests && ./c-test-framework-tests.o

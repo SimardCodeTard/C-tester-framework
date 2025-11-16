@@ -16,81 +16,81 @@
 /*                               Made with love and coffee by SimardCodeTard */
 /* ************************************************************************* */
 
-#include "tests.h"
+#include "test_serialization_utils.h"
 
-bool_t	do_test(test_result_t out)
+test_result_t	do_test(int pipefd, void *p)
 {
-	test_result_t	in;
-	int				fd;
+	test_result_t						result;
+	test_result_t						write;
+	test_result_t						read;
+	const params_serialization_utils_t	*params =
+		(params_serialization_utils_t *)p;
+	int									test_pipefd[2];
 
-	fd = open(SERIALIZATION_FILE, O_CREAT | O_WRONLY, 0777);
-	if (fd == -1)
-	{
-		fprintf(stderr, KRED
-			"ERROR: Failed to open file in tests_serialization.\n" KNRM);
-		return (false);
-	}
-	serialize_result(fd, out);
-	close(fd);
-	fd = open(SERIALIZATION_FILE, O_RDONLY);
-	if (fd == -1)
-	{
-		fprintf(stderr, KRED
-			"ERROR: Failed to open file in tests_serialization.\n" KNRM);
-		return (false);
-	}
-	in = deserialize_result(fd);
-	close(fd);
-	return (strequals(in.description, out.description)
-		&& strequals(in.expected, out.expected) && strequals(in.got, out.got)
-		&& in.success == out.success);
+	write = params->test_result;
+	pipe(test_pipefd);
+	serialize_result(test_pipefd[1], write);
+	read = deserialize_result(test_pipefd[0]);
+	result.description = params->description;
+	result.expected = "";
+	result.got = "";
+	result.success = strequals(write.description, read.description)
+		&& strequals(write.expected, read.expected)
+		&& strequals(write.got, read.got)
+		&& write.success == read.success;
+	serialize_result(pipefd, result);
+	return (result);
 }
 
-void	tests_serialization(void)
+test_set_t	tests_serialization(void)
 {
-	bool_t			ok;
-	test_result_t	standard_test_result;
-	test_result_t	partially_null_test_result;
-	test_result_t	fully_null_test_result;
+	test_set_t						set;
+	test_t							*tests;
+	params_serialization_utils_t	*params;
+	test_result_t					standard_test_result;
+	test_result_t					partially_null_test_result;
+	test_result_t					fully_null_test_result;
 
-	ok = true;
-	printf("Running serialization tests\n");
 	standard_test_result.description = "Description";
 	standard_test_result.expected = "Expected";
 	standard_test_result.got = "Got";
 	standard_test_result.success = true;
-	if (!do_test(standard_test_result))
-	{
-		printf(KRED "Test with standard result failed !\n" KNRM);
-		ok = false;
-	}
-	else
-		printf(KGRN "Test with standard result succeded !\n" KNRM);
+
 	partially_null_test_result.description = "Description";
 	partially_null_test_result.expected = NULL;
 	partially_null_test_result.got = NULL;
 	partially_null_test_result.success = false;
-	if (do_test(partially_null_test_result))
-		printf(KGRN "Test with partially NULL result succeded !\n" KNRM);
-	else
-	{
-		ok = false;
-		printf(KRED "Test with partially NULL result failed !\n" KNRM);
-	}
+
 	fully_null_test_result.description = NULL;
 	fully_null_test_result.expected = NULL;
 	fully_null_test_result.got = NULL;
 	fully_null_test_result.success = false;
-	if (!do_test(fully_null_test_result))
-	{
-		printf(KRED "Test with fully NULL result failed !\n" KNRM);
-		ok = false;
-	}
-	else
-		printf(KGRN "Test with fully NULL result succeded !\n" KNRM);
-	printf("------ Summary ------\n");
-	if (ok)
-		printf(KGRN "Serialize: ✅ All tests succeeded !\n" KNRM);
-	else
-		printf(KRED "Serialize: ❌ Some tests failed !\n" KNRM);
+
+	tests = malloc(3 * sizeof(test_t));
+
+	params = malloc(sizeof(params_serialization_utils_t));
+	tests[0].do_test = do_test;
+	tests[0].expect_sigsegv = false;
+	params->description = "Standard test result";
+	params->test_result = standard_test_result;
+	tests[0].params = params;
+
+	params = malloc(sizeof(params_serialization_utils_t));
+	tests[1].do_test = do_test;
+	tests[1].expect_sigsegv = false;
+	params->description = "Partially NULL result";
+	params->test_result = partially_null_test_result;
+	tests[1].params = params;
+
+	params = malloc(sizeof(params_serialization_utils_t));
+	tests[2].do_test = do_test;
+	tests[2].expect_sigsegv = false;
+	params->description = "Fully NULL test result";
+	params->test_result = fully_null_test_result;
+	tests[2].params = params;
+
+	set.name = "tests_serialization_utils";
+	set.tests = tests;
+	set.total = 3;
+	return (set);
 }
