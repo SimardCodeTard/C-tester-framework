@@ -1,4 +1,4 @@
-CFLAGS = -Wall -Wextra -Werror -Iinclude
+CFLAGS = -Wall -Wextra -Werror -g3 -Iinclude
 
 CFLAGS_TESTS = -Wall -Wextra -Werror -g3 -Iinclude
 
@@ -43,10 +43,10 @@ $(NAME) : $(SRCS_OBJ)
 tests: $(TESTS_NAME)
 
 $(TESTS_NAME): $(NAME)
-	$(CC) -o $(TESTS_NAME) $(TESTS_FILES) $^ $(CFLAGS_TESTS) -L -l:$(NAME) -Llib -l:libft.a
+	$(CC) -o $(TESTS_NAME) $(TESTS_FILES) $^ $(CFLAGS_TESTS) -L -l:$(NAME) -Llib -lft
 
 %.o: %.c
-	$(CC) -c $(CFLAGS) -MMD -MP $< -o $@ -Llib -l:libft.a
+	$(CC) -c $(CFLAGS) -MMD -MP $< -o $@
 
 release : all
 	mkdir -p $(RELEASE_NAME)/include/headers
